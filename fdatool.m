@@ -121,19 +121,36 @@ function fdatool(arg)
   %% PANEL ---------------------------------------------------------------------
 
   pnlFiltSpecsFig = uipanel ('title', 'Filter Specifications',
-                   'position', [.25 .5 .75 .5]);
+                             'position', [.25 .5 .75 .5]);
 
-  imgSpec = uicontrol('parent',  pnlFiltSpecsFig,
-                      'style', 'text',
-                      'string', '__________________',
-                      'position',[20 50 520 150],
-                      'backgroundcolor', [1 1 1]);
+  lblMagAxis = uicontrol('parent',  pnlFiltSpecsFig,
+                         'style', 'text',
+                         'string', 'Mag. (dB)',
+                         'position',[20 195 70 35]);
 
-  lblTest = uicontrol('parent',  pnlFiltSpecsFig,
-                      'style', 'text',
-                      'string', 'f (Hz)',
-                      'position',[500 10 50 36]);
+  lblFreqAxis = uicontrol('parent',  pnlFiltSpecsFig,
+                          'style', 'text',
+                          'string', 'f (Hz)',
+                          'position',[500 10 50 35]);
+                      
+  %p = get(pnlFiltSpecsFig, 'Position'); % vou usar isso?
+                      
+  imgSpec = axes('Parent', pnlFiltSpecsFig,
+                 'Position', [.1 .8 .8 -.5]);
+  
+  box on;
+  
+  plot(linspace(0,0.5), 0.5);
 
+  %ref.: https://www.mathworks.com/help/matlab/ref/xticks.html  
+  set(imgSpec, 'XTick',[], 'YTick', []);
+  
+  %ref.: https://octave.org/doc/v4.4.1/Axes-Properties.html#Axes-Properties  
+  set(imgSpec, 'xlim', [0 1]);
+  set(imgSpec, 'ylim', [0 1]);
+  
+  %set(h_fig,'CurrentAxes',imgSpec);
+  %line(imgSpec, [0 0.5], [0.8 0.8]); % not working ???
 
 
   %% PANEL ---------------------------------------------------------------------
