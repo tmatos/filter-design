@@ -390,10 +390,8 @@ function disp_dados (hObject, eventdata )
       type = 'high'
     case 'type_band_pass'
       type = 'pass'
-      wc_norm = [wc_norm, wc_norm + 0.1];
     case 'type_band_stop'
       type = 'stop'
-      wc_norm = [wc_norm, wc_norm + 0.1];
   end
   
   %window
@@ -403,6 +401,24 @@ function disp_dados (hObject, eventdata )
   h_pop_mag_unit = findobj('Tag', 'mag_unit');
   h_edt_a_pass = findobj('Tag', 'a_pass');
   h_edt_a_stop = findobj('Tag', 'a_stop');
+  
+  mag_unit_id = get(h_pop_mag_unit, 'value');
+  
+  mag_unit = 1; % para dB
+  
+  if mag_unit_id == 1
+    mag_unit = 1; % para dB
+  elseif mag_unit_id == 2
+    mag_unit = 10; % para B
+  end
+  
+  apass = get(h_edt_a_pass, 'string');
+  apass = str2num(apass);
+  apass = apass * mag_unit;
+  
+  astop = get(h_edt_a_stop, 'string');
+  astop = str2num(astop);
+  astop = astop * mag_unit;
   
   
   % pegar os parametros de frequencia
@@ -433,13 +449,32 @@ function disp_dados (hObject, eventdata )
   fstop = str2num(fstop);
   fstop = fstop * freq_unit;
   
-  wc_norm; % default is dimensionless (i. e., w in [0, 1])
-
-  %fc = wc_norm * (fs/2);
   
-  wc_norm = fstop * 2/fs;
-
-  h = fir1(n, wc_norm, type);
+  % montar a resposta
+  % TODO ...
+  
+  w_norm = 0.5; % default is dimensionless (i. e., w in [0, 1])
+  
+  switch type
+    case 'low'
+      w_norm = fstop * 2/fs;
+    case 'high'
+      w_norm = fpass * 2/fs;
+    case 'pass'
+      if fstop > fpass
+        msgbox('Fstop deve ser menor que Fpass', 'Erro')
+        return
+      end
+      w_norm = [fstop * 2/fs, fpass * 2/fs];
+    case 'stop'
+      if fstop > fpass
+        msgbox('Fstop deve ser menor que Fpass', 'Erro')
+        return
+      end
+      w_norm = [fstop * 2/fs, fpass * 2/fs];
+  end
+  
+  h = fir1(n, w_norm, type);
 
   figure;
   freqz(h);
