@@ -196,7 +196,7 @@ function fdatool(arg)
 
                    
   pnlFilterOrder = uipanel ('title', 'Filter Order',
-                             'position', [.25 .1 .25 .4]);
+                            'position', [.25 .1 .25 .4]);
 
   % create a button group
   gp2 = uibuttongroup (pnlFilterOrder, 'Position', [ 0 0 1 1]);
@@ -205,7 +205,7 @@ function fdatool(arg)
   rb21 = uicontrol(gp2,
                   'style', 'radiobutton', ...
                   'string', 'Specify Order:', ...
-                   "value", 1,
+                  'value', 1,
                   'selected', 'on',
                   'Position', [ 10 100 150 30 ]);
   rb22 = uicontrol(gp2,
@@ -216,9 +216,11 @@ function fdatool(arg)
   edtOrder = uicontrol(gp2,
                        'style', 'edit',
                        'string', num2str(n),
+                       'UserData', num2str(n),
                        'Position', [ 135 101 30 25 ],
-                       'Tag', 'edt_order');
-
+                       'Tag', 'edt_order',
+                       'callback', { @cb_valida_ordem }
+                       );
 
 
   %% PANEL ---------------------------------------------------------------------
@@ -235,7 +237,7 @@ function fdatool(arg)
                           'style', 'popupmenu',
                           'string', ['Hz'; 'kHz'],
                           'position',[60 145 100 30],
-                          'tag', 'pop_freq_unit');
+                          'Tag', 'pop_freq_unit');
 
   lblFs = uicontrol('parent',  pnlFreqSpecs,
                     'style', 'text',
@@ -246,7 +248,7 @@ function fdatool(arg)
                     'style', 'edit', ...
                     'string', '48000', ...
                     'Position', [ 70 110 90 25 ],
-                    'tag', 'edt_fs');
+                    'Tag', 'edt_fs');
 
   lblFpass = uicontrol('parent',  pnlFreqSpecs,
                        'style', 'text',
@@ -257,7 +259,7 @@ function fdatool(arg)
                        'style', 'edit', ...
                        'string', '9600', ...
                        'Position', [ 70 80 90 25 ],
-                       'tag', 'edt_fpass');
+                       'Tag', 'edt_fpass');
 
   lblFstop = uicontrol('parent',  pnlFreqSpecs,
                        'style', 'text',
@@ -268,7 +270,7 @@ function fdatool(arg)
                        'style', 'edit', ...
                        'string', '11600', ...
                        'Position', [ 70 50 90 25 ],
-                       'tag', 'edt_fstop');
+                       'Tag', 'edt_fstop');
 
 
 
@@ -286,7 +288,7 @@ function fdatool(arg)
                         'style', 'popupmenu',
                         'string', ['dB'; 'B'],
                         'position',[60 145 100 30],
-                        'tag', 'mag_unit');
+                        'Tag', 'mag_unit');
 
   lblApass = uicontrol('parent',  pnlMagSpecs,
                        'style', 'text',
@@ -297,7 +299,7 @@ function fdatool(arg)
                        'style', 'edit', ...
                        'string', '1', ...
                        'Position', [ 70 105 90 25 ],
-                       'tag', 'a_pass');
+                       'Tag', 'a_pass');
 
   lblAstop = uicontrol('parent',  pnlMagSpecs,
                        'style', 'text',
@@ -308,7 +310,7 @@ function fdatool(arg)
                        'style', 'edit', ...
                        'string', '80', ...
                        'Position', [ 70 70 90 25 ],
-                       'tag', 'a_stop');
+                       'Tag', 'a_stop');
 
   %% PANEL EMBAIXO--------------------------------------------------------------
 
@@ -348,17 +350,16 @@ function fdatool(arg)
 end
 
 
-% unused
-function update_order(obj)
-  % gcbo holds the handle of the control
-  % "Return a handle to the object whose callback is currently executing."
-
-  h = guidata(obj); % ??
-
-  if(gcbo == h.edtOrder)
-
-  endif
-
+function cb_valida_ordem(h_obj, eventdata)
+  str = get(h_obj, 'string');
+  
+  if isempty(str2num(str))
+    set(h_obj, 'string', get(h_obj, 'UserData') );
+    warndlg('A ordem deve ser um inteiro positivo');
+  elseif str2num(str) < 1
+    set(h_obj, 'string', get(h_obj, 'UserData') );
+    warndlg('A ordem deve ser um inteiro positivo');
+  end
 end
 
 
@@ -373,7 +374,6 @@ function disp_dados (hObject, eventdata )
   h_edt_order = findobj('Tag', 'edt_order');
   n = get(h_edt_order, 'string');
   n = str2num(n);
-  n
   
   % pegar type pela selecao dos radiobuttons
   
@@ -381,26 +381,26 @@ function disp_dados (hObject, eventdata )
   h_selected_type = get(h_grp_type, 'SelectedObject');
   type_tag = get(h_selected_type, 'Tag');
   
-  type = 'low'
+  type = 'low';
   
   switch type_tag
     case 'type_low_pass'
-      type = 'low'
+      type = 'low';
     case 'type_high_pass'
-      type = 'high'
+      type = 'high';
     case 'type_band_pass'
-      type = 'pass'
+      type = 'pass';
     case 'type_band_stop'
-      type = 'stop'
+      type = 'stop';
   end
   
   %window
   %noscale
   
   % pegar os parametros de magnitude
-  h_pop_mag_unit = findobj('Tag', 'mag_unit');
-  h_edt_a_pass = findobj('Tag', 'a_pass');
-  h_edt_a_stop = findobj('Tag', 'a_stop');
+  h_pop_mag_unit = findobj('tag', 'mag_unit');
+  h_edt_a_pass = findobj('tag', 'a_pass');
+  h_edt_a_stop = findobj('tag', 'a_stop');
   
   mag_unit_id = get(h_pop_mag_unit, 'value');
   
@@ -422,10 +422,10 @@ function disp_dados (hObject, eventdata )
   
   
   % pegar os parametros de frequencia
-  h_pop_freq_unit = findobj('Tag', 'pop_freq_unit');
-  h_edt_fs = findobj('Tag', 'edt_fs');
-  h_edt_fpass = findobj('Tag', 'edt_fpass');
-  h_edt_fstop = findobj('Tag', 'edt_fstop');
+  h_pop_freq_unit = findobj('tag', 'pop_freq_unit');
+  h_edt_fs = findobj('tag', 'edt_fs');
+  h_edt_fpass = findobj('tag', 'edt_fpass');
+  h_edt_fstop = findobj('tag', 'edt_fstop');
   
   freq_unit_id = get(h_pop_freq_unit, 'value');
   
