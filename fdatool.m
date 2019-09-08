@@ -143,8 +143,9 @@ function fdatool(arg)
 
   % create a button group
   gp1 = uibuttongroup (pnlResponseType,
-                       'Position', [ 0 0 1 1]);
-                       %'SelectionChangedFcn', @b_resptype_selection); % not supported?
+                       'Position', [ 0 0 1 1],
+                       'Tag', 'grp_type');
+                       %'SelectionChangedFcn', @b_resptype_selection); % not supported??
   
   % create a buttons in the group
   rb11 = uicontrol(gp1,
@@ -152,22 +153,22 @@ function fdatool(arg)
                    'string', 'Low Pass',
                    "value", 1,
                    'Position', [ 10 130 150 30 ],
-                   'callback','type = "low"');
+                   'Tag','type_low_pass');
   rb12 = uicontrol(gp1,
                    'style', 'radiobutton', ...
                    'string', 'High Pass', ...
                    'Position', [ 10 100 150 30 ],
-                   'callback','type = "high"');
+                   'Tag','type_high_pass');
   rb13 = uicontrol(gp1,
                    'style', 'radiobutton', ...
                    'string', 'Band Pass', ...
                    'Position', [ 10 70 150 30 ],
-                   'callback','type = "band_pass"');
+                   'Tag','type_band_pass');
   rb14 = uicontrol(gp1,
                    'style', 'radiobutton', ...
                    'string', 'Band Stop', ...
                    'Position', [ 10 40 150 30 ],
-                   'callback','type = "band_stop"');
+                   'Tag','type_band_stop');
   
   # TODO
   function b_resptype_selection(source,event)
@@ -198,7 +199,8 @@ function fdatool(arg)
   edtOrder = uicontrol(gp2,
                        'style', 'edit',
                        'string', num2str(n),
-                       'Position', [ 135 101 30 25 ]);
+                       'Position', [ 135 101 30 25 ],
+                       'Tag', 'edt_order');
 
 
 
@@ -292,8 +294,7 @@ function fdatool(arg)
                          'string', 'Design Filter',
                          'position',[ (LARGURA-150)/2 10 150 25],
                          'tooltipstring', 'faz a porra toda',
-                         'callback', { @disp_dados, n, w, type, guidata(h_fig,edtOrder) });
-                         %'callback','dialogtest');
+                         'callback', { @disp_dados, w } );
 
   %% ---------------------------------------------------------------------------
 
@@ -338,13 +339,42 @@ end
 
 
 %% callback subfunction (in same file)
-function disp_dados (hObject, eventdata, n, wc_norm, type, h_edtOrder )
-  n = get(h_edtOrder,'string');
+function disp_dados (hObject, eventdata, wc_norm )
+  
+  %help: https://www.mathworks.com/help/matlab/creating_guis/share-data-among-callbacks.html
+  %help: http://matlab.izmiran.ru/help/techdoc/ref/uibuttongroupproperties.html
+  
+  % pegar n pelo valor de entrada da edtbox
+  
+  h_edt_order = findobj('Tag', 'edt_order');
+  
+  n = get(h_edt_order, 'string');
   n = str2num(n);
 
   n
   wc_norm % default is dimensionless (i. e., w in [0, 1])
-  type
+  
+  % pegar type pela selecao dos radiobuttons
+  
+  h_grp_type = findobj('Tag', 'grp_type');
+  h_selected_type = get(h_grp_type, 'SelectedObject');
+  type_tag = get(h_selected_type, 'Tag');
+  
+  type = 'low'
+  
+  switch type_tag
+    case 'type_low_pass'
+      type = 'low'
+    case 'type_high_pass'
+      type = 'high'
+    case 'type_band_pass'
+      type = 'pass'
+      wc_norm = [wc_norm, wc_norm + 0.1];
+    case 'type_band_stop'
+      type = 'stop'
+      wc_norm = [wc_norm, wc_norm + 0.1];
+  end
+  
   %window
   %noscale
 
