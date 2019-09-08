@@ -231,10 +231,11 @@ function fdatool(arg)
                       'string', 'Units:',
                       'position',[5 150 50 20]);
 
-  pop1 = uicontrol(pnlFreqSpecs,
-                  'style', 'popupmenu',
-                  'string', ['Hz'; 'kHz'],
-                  'position',[60 145 100 30]);
+  popFreqUnit = uicontrol(pnlFreqSpecs,
+                          'style', 'popupmenu',
+                          'string', ['Hz'; 'kHz'],
+                          'position',[60 145 100 30],
+                          'tag', 'pop_freq_unit');
 
   lblFs = uicontrol('parent',  pnlFreqSpecs,
                     'style', 'text',
@@ -244,7 +245,8 @@ function fdatool(arg)
   edtFs = uicontrol('parent',  pnlFreqSpecs,
                     'style', 'edit', ...
                     'string', '48000', ...
-                    'Position', [ 70 110 90 25 ]);
+                    'Position', [ 70 110 90 25 ],
+                    'tag', 'edt_fs');
 
   lblFpass = uicontrol('parent',  pnlFreqSpecs,
                        'style', 'text',
@@ -254,17 +256,19 @@ function fdatool(arg)
   edtFpass = uicontrol('parent',  pnlFreqSpecs,
                        'style', 'edit', ...
                        'string', '9600', ...
-                       'Position', [ 70 80 90 25 ]);
+                       'Position', [ 70 80 90 25 ],
+                       'tag', 'edt_fpass');
 
-  lblStop = uicontrol('parent',  pnlFreqSpecs,
+  lblFstop = uicontrol('parent',  pnlFreqSpecs,
                        'style', 'text',
                        'string', 'Fstop:',
                        'position',[5 55 50 20]);
 
-  edtStop = uicontrol('parent',  pnlFreqSpecs,
+  edtFstop = uicontrol('parent',  pnlFreqSpecs,
                        'style', 'edit', ...
                        'string', '11600', ...
-                       'Position', [ 70 50 90 25 ]);
+                       'Position', [ 70 50 90 25 ],
+                       'tag', 'edt_fstop');
 
 
 
@@ -278,10 +282,11 @@ function fdatool(arg)
                       'string', 'Units:',
                       'position',[5 150 50 20]);
 
-  pop2 = uicontrol(pnlMagSpecs,
-                  'style', 'popupmenu',
-                  'string', ['dB'; 'B'],
-                  'position',[60 145 100 30]);
+  popMagUnit = uicontrol(pnlMagSpecs,
+                        'style', 'popupmenu',
+                        'string', ['dB'; 'B'],
+                        'position',[60 145 100 30],
+                        'tag', 'mag_unit');
 
   lblApass = uicontrol('parent',  pnlMagSpecs,
                        'style', 'text',
@@ -291,7 +296,8 @@ function fdatool(arg)
   edtApass = uicontrol(pnlMagSpecs,
                        'style', 'edit', ...
                        'string', '1', ...
-                       'Position', [ 70 105 90 25 ]);
+                       'Position', [ 70 105 90 25 ],
+                       'tag', 'a_pass');
 
   lblAstop = uicontrol('parent',  pnlMagSpecs,
                        'style', 'text',
@@ -301,7 +307,8 @@ function fdatool(arg)
   edtAstop = uicontrol(pnlMagSpecs,
                        'style', 'edit', ...
                        'string', '80', ...
-                       'Position', [ 70 70 90 25 ]);
+                       'Position', [ 70 70 90 25 ],
+                       'tag', 'a_stop');
 
   %% PANEL EMBAIXO--------------------------------------------------------------
 
@@ -311,7 +318,7 @@ function fdatool(arg)
                          'string', 'Design Filter',
                          'position',[ (LARGURA-150)/2 10 150 25],
                          'tooltipstring', 'faz a porra toda',
-                         'callback', { @disp_dados, w } );
+                         'callback', { @disp_dados } );
 
   %% ---------------------------------------------------------------------------
 
@@ -356,7 +363,7 @@ end
 
 
 %% callback subfunction (in same file)
-function disp_dados (hObject, eventdata, wc_norm )
+function disp_dados (hObject, eventdata )
   
   %help: https://www.mathworks.com/help/matlab/creating_guis/share-data-among-callbacks.html
   %help: http://matlab.izmiran.ru/help/techdoc/ref/uibuttongroupproperties.html
@@ -364,12 +371,9 @@ function disp_dados (hObject, eventdata, wc_norm )
   % pegar n pelo valor de entrada da edtbox
   
   h_edt_order = findobj('Tag', 'edt_order');
-  
   n = get(h_edt_order, 'string');
   n = str2num(n);
-
   n
-  wc_norm % default is dimensionless (i. e., w in [0, 1])
   
   % pegar type pela selecao dos radiobuttons
   
@@ -394,9 +398,46 @@ function disp_dados (hObject, eventdata, wc_norm )
   
   %window
   %noscale
+  
+  % pegar os parametros de magnitude
+  h_pop_mag_unit = findobj('Tag', 'mag_unit');
+  h_edt_a_pass = findobj('Tag', 'a_pass');
+  h_edt_a_stop = findobj('Tag', 'a_stop');
+  
+  
+  % pegar os parametros de frequencia
+  h_pop_freq_unit = findobj('Tag', 'pop_freq_unit');
+  h_edt_fs = findobj('Tag', 'edt_fs');
+  h_edt_fpass = findobj('Tag', 'edt_fpass');
+  h_edt_fstop = findobj('Tag', 'edt_fstop');
+  
+  freq_unit_id = get(h_pop_freq_unit, 'value');
+  
+  freq_unit = 1; % para Hz
+  
+  if freq_unit_id == 1
+    freq_unit = 1; % para Hz
+  elseif freq_unit_id == 2
+    freq_unit = 1000; % para kHz
+  end
+  
+  fs = get(h_edt_fs, 'string');
+  fs = str2num(fs);
+  fs = fs * freq_unit;
+  
+  fpass = get(h_edt_fpass, 'string');
+  fpass = str2num(fpass);
+  fpass = fpass * freq_unit;
+  
+  fstop = get(h_edt_fstop, 'string');
+  fstop = str2num(fstop);
+  fstop = fstop * freq_unit;
+  
+  wc_norm; % default is dimensionless (i. e., w in [0, 1])
 
-  Fs = 48000;
-  fc = wc_norm * (Fs/2);
+  %fc = wc_norm * (fs/2);
+  
+  wc_norm = fstop * 2/fs;
 
   h = fir1(n, wc_norm, type);
 
