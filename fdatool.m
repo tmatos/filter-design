@@ -161,8 +161,8 @@ function fdatool(arg)
   % create a button group
   gp1 = uibuttongroup (pnlResponseType,
                        'Position', [ 0 0 1 1],
-                       'Tag', 'grp_type');
-                       %'SelectionChangedFcn', @b_resptype_selection); % not supported??
+                       'Tag', 'grp_type',
+                       'SelectionChangedFcn', { @b_response_type_selection } );
   
   % create a buttons in the group
   rb11 = uicontrol(gp1,
@@ -188,10 +188,14 @@ function fdatool(arg)
                    'Tag','type_band_stop');
   
   # TODO
-  function b_resptype_selection(source,event)
-       disp(['Previous: ' event.OldValue.String]);
-       disp(['Current: ' event.NewValue.String]);
-       disp('------------------');
+  # help: https://docs.octave.org/latest/Callbacks.html
+  # help: https://docs.octave.org/v9.3.0/Structure-Arrays.html
+  function b_response_type_selection(h_src, event)
+    h_rb_selected = event.NewValue;
+    str_tag = get(h_rb_selected, 'Tag');
+    disp(['Previous: ' get(event.OldValue, 'Tag')]);
+    disp(['Current: ' str_tag]);
+    disp('------------------');
   end
 
                    
