@@ -135,22 +135,31 @@ function fdatool(arg)
                       
   %p = get(pnlFiltSpecsFig, 'Position'); % vou usar isso?
                       
-  imgSpec = axes('Parent', pnlFiltSpecsFig,
-                 'Position', [.1 .8 .8 -.5]);
+  imgSpecAxes = axes('Parent', pnlFiltSpecsFig,
+                 'Position', [.1 .8 .8 -.5],
+                 'Tag', 'img_spec_axes');
   
   box on;
   
-  plot(linspace(0,0.5), 0.5);
+  h_img_lowpass = imread('img/lowpass.png');
+  h_img_highpass = imread('img/highpass.png');
+  
+  %h_img = image([.01 .8], [.8 -.5], img);
+  
+  h_img_spec = image([0 1], [1 0],
+                     h_img_lowpass,
+                     'Tag', 'img_spec');
+  hold on;
 
   %ref.: https://www.mathworks.com/help/matlab/ref/xticks.html  
-  set(imgSpec, 'XTick',[], 'YTick', []);
+  set(imgSpecAxes, 'XTick',[], 'YTick', []);
   
   %ref.: https://octave.org/doc/v4.4.1/Axes-Properties.html#Axes-Properties  
-  set(imgSpec, 'xlim', [0 1]);
-  set(imgSpec, 'ylim', [0 1]);
+  set(imgSpecAxes, 'xlim', [0 1]);
+  set(imgSpecAxes, 'ylim', [0 1]);
   
-  %set(h_fig,'CurrentAxes',imgSpec);
-  %line(imgSpec, [0 0.5], [0.8 0.8]); % not working ???
+  %set(h_fig,'CurrentAxes',imgSpecAxes);
+  %line(imgSpecAxes, [0 0.5], [0.8 0.8]); % not working ???
 
 
   %% PANEL ---------------------------------------------------------------------
@@ -195,7 +204,25 @@ function fdatool(arg)
     str_tag = get(h_rb_selected, 'Tag');
     disp(['Previous: ' get(event.OldValue, 'Tag')]);
     disp(['Current: ' str_tag]);
-    disp('------------------');
+    
+    h_img_spec = findobj("Tag", "img_spec");
+    
+    switch str_tag
+      case 'type_low_pass'
+        set(h_img_spec, "visible", "on");
+        image([0 1], [1 0], h_img_lowpass, 'Tag', 'img_spec');
+      case 'type_high_pass'
+        delete(h_img_spec);
+        h_img_highpass = imread('img/highpass.png');
+        image([0 1], [1 0], h_img_highpass, 'Tag', 'img_spec');
+        hold on;
+        set(h_img_spec, "visible", "on");
+      case 'type_band_pass'
+        set(h_img_spec, "visible", "off");
+      case 'type_band_stop'
+        set(h_img_spec, "visible", "off");
+    end
+    
   end
 
                    
